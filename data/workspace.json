@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
   "workspace": {
-    "version": 1,
+    "cards": [],
     "courses": [],
     "lectures": [],
-    "cards": [],
     "recalls": [],
-    "reviews": []
+    "reviews": [],
+    "version": 1
   },
   "versions": {
     "courses": {},
