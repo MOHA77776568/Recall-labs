@@ -3,3 +3,27 @@
 .local-loading{padding:3rem;font:16px system-ui,sans-serif}.local-error{max-width:760px;margin:50px auto;padding:24px;background:#fff;border:1px solid #e1e6ef;border-radius:12px;font:16px/1.7 system-ui,sans-serif}
 #root [data-slot=sidebar-wrapper]{min-height:calc(100svh - 44px)}#root [data-slot=sidebar-container]{top:44px;height:calc(100svh - 44px)}
 @media(max-width:767px){.local-shell{align-items:flex-start;flex-direction:column;padding:8px 16px;gap:3px}.local-shell small{display:none}#root [data-slot=sidebar-container]{top:65px;height:calc(100svh - 65px)}}
+
+/* Isolate Latin math inside RTL flashcard text without changing stored answers. */
+#root .recall-inline-math {
+  display: inline-block;
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  vertical-align: middle;
+  line-height: 1.3;
+  letter-spacing: normal;
+  font-family: "Cambria Math", "STIX Two Math", "Segoe UI Symbol", serif;
+  font-variant-numeric: lining-nums;
+  padding: 0.04em 0.12em;
+}
+#root .recall-inline-math math {
+  font-family: inherit;
+  font-size: 1.05em;
+  vertical-align: -0.14em;
+}
+#root .study-card h2 .recall-inline-math {
+  font-weight: 600;
+}
