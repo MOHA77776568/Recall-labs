@@ -1,0 +1,162 @@
+{
+  "source": "https://recall-lab.moha77776568.chatgpt.site/",
+  "retrievedAt": "2026-10-12",
+  "assets": [
+    {
+      "file": "recall-app-DZqLhe8P.js",
+      "sourceSha256": "d186424e2cd07c6e323e890f64ac89769f501c73e00cd85232172b3fb191b18f",
+      "localSha256": "d99e7c4d351457097e7a2dda809590ad2b924f3c222817b3367bd9170aa8cb63"
+    },
+    {
+      "file": "framework-D_rUT4EX.js",
+      "sourceSha256": "939d0fabebb3b2f01753bb866b067d8d3384fb06da19f0e6557609d3b1a9f4f7",
+      "localSha256": "939d0fabebb3b2f01753bb866b067d8d3384fb06da19f0e6557609d3b1a9f4f7"
+    },
+    {
+      "file": "rolldown-runtime-C60lm6uB.js",
+      "sourceSha256": "5db5ba82eef00d1dee7e86e663098c9427d01183a88d357437daff295aec3e75",
+      "localSha256": "5db5ba82eef00d1dee7e86e663098c9427d01183a88d357437daff295aec3e75"
+    },
+    {
+      "file": "index.BFEBkeqk.css",
+      "sourceSha256": "387a41d6e101b29364d14684cee731283bcaaccb8edc299686a9e5ff609e6a97",
+      "localSha256": "387a41d6e101b29364d14684cee731283bcaaccb8edc299686a9e5ff609e6a97"
+    },
+    {
+      "file": "pdf-DhM3tJIo.js",
+      "sourceSha256": "7b6ea75fe664d6a499f8e940d7f3933a94f793fdb075d152b5b02e4a43fa58f6",
+      "localSha256": "6d4f49488769774ae04fbf5337014533cc8ed6dedb1a38b92e669da55d52f6f7"
+    },
+    {
+      "file": "pdf.worker.min.mjs",
+      "sourceSha256": "8ab0e5e30031b4a06ecfddd5ae9562f0227f830ee7ec9ed1a968b134243d2386",
+      "localSha256": "8ab0e5e30031b4a06ecfddd5ae9562f0227f830ee7ec9ed1a968b134243d2386"
+    },
+    {
+      "file": "favicon.svg",
+      "sourceSha256": "fb1c040dd403d90ffb08fff823476c9b51f5c549e83cb640670557e06236166e",
+      "localSha256": "fb1c040dd403d90ffb08fff823476c9b51f5c549e83cb640670557e06236166e"
+    }
+  ],
+  "modifications": [
+    {
+      "from": "from\"./index-C4Md5KNu.js\"",
+      "to": "from\"./preload-shim.js\"",
+      "occurrences": 1
+    },
+    {
+      "from": "t.GlobalWorkerOptions.workerSrc=`/pdf.worker.min.mjs`",
+      "to": "t.GlobalWorkerOptions.workerSrc=new URL(`./pdf.worker.min.mjs`,import.meta.url).href",
+      "occurrences": 1
+    },
+    {
+      "from": "href:`https://open-spaced-repetition.github.io/ts-fsrs/`",
+      "to": "href:`./SOURCE.md`",
+      "occurrences": 1
+    },
+    {
+      "from": "href:`/signout-with-chatgpt?return_to=%2F`",
+      "to": "href:`../index.html`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Sign out`",
+      "to": "`GitHub sync & app updates`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Cloud saved`",
+      "to": "`Saved locally`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Last cloud save`",
+      "to": "`Last local save`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Refresh from cloud`",
+      "to": "`Refresh local workspace`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Recent cloud versions`",
+      "to": "`Recent local versions`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Restore this cloud version?`",
+      "to": "`Restore this local version?`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Cloud version restored.`",
+      "to": "`Local version restored.`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Load the latest cloud version?`",
+      "to": "`Load the latest local version?`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Online access is required. Save open drafts before changing devices. Concurrent edits are checked before saving.`",
+      "to": "`Study works offline. Save open drafts and use GitHub sync in Desktop settings before changing devices. Concurrent edits are checked before saving.`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Recall saved. Ready to resume on another device.`",
+      "to": "`Recall saved locally. Use GitHub sync before changing devices.`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Saved to your private workspace.`",
+      "to": "`Saved to your local workspace.`",
+      "occurrences": 1
+    },
+    {
+      "file": "pdf-DhM3tJIo.js",
+      "from": "from\"./index-C4Md5KNu.js\"",
+      "to": "from\"./preload-shim.js\"",
+      "occurrences": 1
+    },
+    {
+      "from": "Private & synced",
+      "to": "Stored on this device",
+      "occurrences": 1
+    },
+    {
+      "from": "Your workspace is saved to the cloud under your ChatGPT account. Use this same account on your phone and computer.",
+      "to": "Your workspace is saved on this device. Use GitHub sync in the local settings panel to share it between devices.",
+      "occurrences": 1
+    },
+    {
+      "from": "cloud backups",
+      "to": "local backups",
+      "occurrences": 3
+    },
+    {
+      "from": "Your cloud data changes only when you confirm.",
+      "to": "Your local data changes only when you confirm.",
+      "occurrences": 1
+    },
+    {
+      "from": "`Saved drafts follow you across devices.`",
+      "to": "`Drafts save locally. Sync with GitHub to use them on another device.`",
+      "occurrences": 1
+    },
+    {
+      "from": "`Account`",
+      "to": "`Storage`",
+      "occurrences": 1
+    }
+  ],
+  "schedulerExtraction": {
+    "source": "recall-app-DZqLhe8P.js",
+    "startByte": 251512,
+    "endByteExclusive": 272532,
+    "localFile": "fsrs-original.js",
+    "localSha256": "8bf1f93679566d4fe24c82f8d8362aa4fecf1e5c7cbaa28a243cbebbf19614dd"
+  },
+  "localFormattingNote": "Whitespace-only trailing indentation was removed from adapted bundle CSS template lines; original source SHA256 is unchanged."
+}

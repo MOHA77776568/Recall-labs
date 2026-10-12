@@ -1,0 +1,63 @@
+{
+  "name": "recall-labs-desktop",
+  "version": "0.1.0",
+  "description": "Offline flashcards with GitHub sync for Windows and localhost",
+  "author": "MOHA77776568",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "web": "node scripts/web-server.js",
+    "cards:import": "node scripts/import-cards.js",
+    "test": "node --test tests/*.test.js",
+    "test:desktop": "node tests/desktop-smoke.cjs",
+    "pack": "electron-builder --dir",
+    "dist:win": "electron-builder --win nsis zip"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.64.0"
+  },
+  "build": {
+    "appId": "com.recalllabs.desktop",
+    "productName": "Recall Labs",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "lib/**/*",
+      "renderer/**/*",
+      "data/*.json",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "artifactName": "Recall-Labs-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "MOHA77776568",
+      "repo": "Recall-labs",
+      "releaseType": "draft"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101a20" />
+    <meta name="color-scheme" content="dark" />
+    <title>Recall Lab — إدارة النسخة المحلية</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <svg class="svg-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="icon-study" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></symbol>
+      <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="16" cy="17" r="3"/></symbol>
+      <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6"/></symbol>
+      <symbol id="icon-sync" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.5 6A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.5 6"/></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+      <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="icon-github" viewBox="0 0 24 24"><path d="M9 20c-4 1-4-2-6-2m12 4v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.1-1.5 6.1-6.7a5.2 5.2 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.6s-1.1-.3-3.7 1.4a12.8 12.8 0 0 0-6.7 0C5.7-.8 4.6-.5 4.6-.5a4.8 4.8 0 0 0-.1 3.6 5.2 5.2 0 0 0-1.4 3.6c0 5.2 3.1 6.4 6.1 6.7a3.4 3.4 0 0 0-.9 2.7V22" transform="translate(0 2) scale(1 .9)"/></symbol>
+    </svg>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="التنقل الرئيسي">
+        <a class="brand" href="./site/index.html" aria-label="فتح Recall Lab"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="brand-name" dir="ltr">recall<span>lab.</span><small>مساحتك للمعرفة، من جهازك</small></span></a>
+        <div class="nav-caption">النسخة المحلية</div>
+        <nav class="navigation"><a class="nav-button" href="./site/index.html"><svg class="icon"><use href="#icon-study"/></svg><span>فتح Recall Lab</span></a><a class="nav-button active" href="#github-settings" aria-current="page"><svg class="icon"><use href="#icon-sync"/></svg><span>المزامنة والبيانات</span></a><a class="nav-button" href="#application-update"><svg class="icon"><use href="#icon-download"/></svg><span>تحديث التطبيق</span></a></nav>
+        <div class="sidebar-thought"><span class="thought-mark" aria-hidden="true">“</span><p>المعرفة لا تحتاج<br />إلى اتصال دائم.<br /><strong>فقط، إلى قليل من التكرار.</strong></p><div class="thought-line"></div></div>
+        <div class="sidebar-bottom"><span class="local-dot" aria-hidden="true"></span><div><strong id="runtime-label">محفوظ على هذا الجهاز</strong><span id="runtime-detail">جاهز للعمل دون إنترنت</span></div></div>
+      </aside>
+      <main class="workspace" id="main-content">
+        <header class="topbar"><span class="topbar-label">مختبر التذكّر <span class="topbar-divider">/</span> إدارة النسخة المحلية</span><div class="topbar-actions"><span class="status-pill" id="connection-status"><span class="status-dot"></span><span id="connection-status-label">وضع محلي</span></span><button type="button" class="icon-button" id="quick-sync" aria-label="مزامنة البيانات مع GitHub" title="مزامنة البيانات"><svg class="icon"><use href="#icon-sync"/></svg></button></div></header>
+        <div class="view">
+          <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> محلي أولًا، متصل عندما تحتاج</div><h1>مساحتك،<br /><span>على جهازك.</span></h1><p>نفس مساحة التعلّم، دون الحاجة إلى فتح موقع خارجي.<br />ومع نسخة مشتركة على GitHub، عندما تختار المزامنة.</p></div><a class="button primary" href="./site/index.html">فتح Recall Lab<svg class="icon"><use href="#icon-arrow"/></svg></a></div>
+          <section id="workspace-summary" aria-label="ملخص بيانات مساحة التعلّم"><div class="stats-grid"><article class="stat-card"><div class="stat-label">البطاقات<span class="stat-dot teal"></span></div><div class="stat-number" id="stat-cards">٠</div><div class="stat-note">محفوظة في مساحة التعلّم المحلية</div></article><article class="stat-card"><div class="stat-label">المحاضرات<span class="stat-dot gold"></span></div><div class="stat-number" id="stat-lectures">٠</div><div class="stat-note">بمصادرها وملاحظاتها</div></article><article class="stat-card"><div class="stat-label">المقررات<span class="stat-dot blue"></span></div><div class="stat-number" id="stat-courses">٠</div><div class="stat-note">لكل موضوع، مساحة خاصة</div></article></div><div class="workspace-details"><span id="workspace-detail">لا توجد بيانات مستوردة بعد.</span><span id="workspace-schema" dir="ltr">Workspace · local</span></div></section>
+          <div class="migration-note"><svg class="icon"><use href="#icon-shield"/></svg><div><strong>بيانات الموقع القديم لا تنتقل تلقائيًا.</strong><p>إذا كانت لديك نسخة احتياطية من الموقع، افتح <a href="./site/index.html">Recall Lab</a> ثم <b dir="ltr">Data &amp; settings</b> لاستيرادها. هذا يحافظ على المقررات، المحاضرات، البطاقات، وسجل المراجعة.</p></div></div>
+          <div id="conflicts-panel" hidden></div>
+          <section id="github-settings" class="settings-card" aria-labelledby="sync-heading"><div class="settings-card-heading"><div class="settings-symbol"><svg class="icon"><use href="#icon-github"/></svg></div><div><h2 id="sync-heading">مزامنة GitHub</h2><p>مساحة التعلّم كاملة في ملف واحد، تشاركه بين أجهزتك.</p></div><span class="small-badge missing" id="token-badge">دون رمز وصول</span></div>
+            <form id="settings-form"><div class="form-grid"><label class="form-field"><span>مالك المستودع</span><input id="github-owner" name="owner" dir="ltr" required autocomplete="off" maxlength="100" /></label><label class="form-field"><span>اسم المستودع</span><input id="github-repo" name="repo" dir="ltr" required autocomplete="off" maxlength="100" /></label><label class="form-field"><span>الفرع</span><input id="github-branch" name="branch" dir="ltr" required autocomplete="off" maxlength="200" /></label><label class="form-field"><span>مسار ملف البيانات</span><input id="github-path" name="path" dir="ltr" required autocomplete="off" maxlength="500" /></label></div><label class="form-field token-field"><span>رمز الوصول إلى GitHub <span class="optional">يُستخدم محليًا لإجراء المزامنة</span></span><input id="github-token" name="token" type="password" dir="ltr" autocomplete="new-password" placeholder="Fine-grained personal access token" aria-describedby="token-help" /><small id="token-help">اختر المستودع المطلوب فقط، وصلاحية Contents للقراءة والكتابة. لا يُضاف الرمز إلى مستودعك أو ملفات التصدير. اترك الحقل فارغًا للاحتفاظ بالرمز الحالي.</small></label>
+              <label class="privacy-choice"><input id="allow-public-sync" type="checkbox" /><span><strong>أسمح بمزامنة بياناتي في مستودع عام.</strong><small>المستودع العام يجعل المصادر، البطاقات، والملاحظات متاحة للجميع. اترك هذا الخيار مغلقًا إذا كنت تستخدم مستودعًا خاصًا أو لا تريد نشر بياناتك.</small></span></label>
+              <div class="settings-form-footer"><p id="sync-note">لا تُجرى اتصالات أو مزامنة تلقائية.</p><button type="submit" class="button secondary" id="save-settings">حفظ الإعدادات</button><button type="button" class="button primary" id="sync-now"><svg class="icon"><use href="#icon-sync"/></svg>مزامنة الآن</button></div>
+            </form><button type="button" class="text-button" id="clear-token" hidden>حذف رمز الوصول من هذا الجهاز</button><div class="sync-result" id="sync-result" role="status" hidden></div>
+          </section>
+          <div class="settings-columns"><section class="settings-card" aria-labelledby="backup-heading"><div class="settings-card-heading"><div class="settings-symbol gold-symbol"><svg class="icon"><use href="#icon-study"/></svg></div><div><h2 id="backup-heading">نسخة معك دائمًا</h2><p>احتفظ بنسخة كاملة من مساحة تعلّمك.</p></div></div><p class="settings-description">الاستيراد والتصدير متاحان داخل Recall Lab في <b dir="ltr">Data &amp; settings</b>. احتفظ بنسخة احتياطية قبل استيراد بيانات أو حل تعارض. المزامنة ليست بديلًا عن النسخ الاحتياطية.</p><div class="button-row"><a class="button secondary" href="./site/index.html">فتح مساحة التعلّم</a><button type="button" class="button secondary" id="export-workspace"><svg class="icon"><use href="#icon-download"/></svg>تصدير نسخة احتياطية</button></div></section><section id="application-update" class="settings-card" aria-labelledby="update-heading"><div class="settings-card-heading"><div class="settings-symbol blue-symbol"><svg class="icon"><use href="#icon-download"/></svg></div><div><h2 id="update-heading">تحديث التطبيق</h2><p>نسخة أحدث، دون تغيير بياناتك.</p></div></div><p class="settings-description" id="update-status" role="status">يتم فحص التحديثات عند طلبك فقط.</p><div class="button-row"><button type="button" class="button secondary" id="check-update">فحص التحديثات</button><button type="button" class="button primary" id="download-update" hidden>تنزيل التحديث</button><button type="button" class="button primary" id="install-update" hidden>تثبيت وإعادة التشغيل</button></div></section></div>
+          <div class="mode-note"><svg class="icon"><use href="#icon-shield"/></svg><div><strong id="mode-title">مصمّم ليعمل من جهازك.</strong><p id="mode-description">الواجهة وملفات تشغيلها محلية. يُستخدم الإنترنت للمزامنة والتحديث عندما تطلب ذلك.</p></div></div>
+        </div><footer class="page-footer"><span dir="ltr">RECALL LAB</span><span>شيئًا فشيئًا، تصبح المعرفة جزءًا منك.</span></footer>
+      </main>
+    </div>
+    <dialog id="confirm-dialog" class="dialog confirm-dialog" aria-labelledby="confirm-title"><div class="dialog-heading"><h2 id="confirm-title"></h2><button type="button" class="icon-button" id="close-confirm" aria-label="إغلاق"><svg class="icon"><use href="#icon-close"/></svg></button></div><p id="confirm-description"></p><div class="dialog-actions"><button type="button" class="button danger" id="confirm-action">تأكيد</button><button type="button" class="button secondary" id="cancel-confirm">إلغاء</button></div></dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <noscript><p class="noscript-message">يحتاج التطبيق إلى تفعيل JavaScript للعمل محليًا.</p></noscript>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

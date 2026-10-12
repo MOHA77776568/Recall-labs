@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "workspace": {
+    "version": 1,
+    "courses": [],
+    "lectures": [],
+    "cards": [],
+    "recalls": [],
+    "reviews": []
+  },
+  "versions": {
+    "courses": {},
+    "lectures": {},
+    "cards": {},
+    "recalls": {},
+    "reviews": {}
+  },
+  "tombstones": {
+    "courses": [],
+    "lectures": [],
+    "cards": [],
+    "recalls": [],
+    "reviews": []
+  }
+}

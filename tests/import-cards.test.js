@@ -1,0 +1,42 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, copyFile, writeFile, readFile, readdir, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { execFile } from 'node:child_process';
+import { emptyWorkspaceDocument } from '../lib/workspace.js';
+
+const run = promisify(execFile);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+test('AI card importer creates real original cards, skips duplicates and preserves review history', async (t) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'recall-import-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  for (const folder of ['scripts', 'lib', 'data', 'renderer/site']) await mkdir(path.join(directory, folder), { recursive: true });
+  for (const filename of ['scripts/import-cards.js', 'lib/data.js', 'lib/workspace.js', 'renderer/site/fsrs-original.js']) await copyFile(path.join(root, filename), path.join(directory, filename));
+  await writeFile(path.join(directory, 'package.json'), '{"type":"module"}');
+  const target = path.join(directory, 'data/workspace.json');
+  await writeFile(target, JSON.stringify(emptyWorkspaceDocument()));
+  const input = path.join(directory, 'cards.json');
+  await writeFile(input, JSON.stringify([{ question: 'ما الاسترجاع النشط؟', answer: 'تذكّر الإجابة قبل قراءتها.', tags: ['learning'] }]));
+  const args = [path.join(directory, 'scripts/import-cards.js'), input, '--course', 'Learning'];
+  const first = await run(process.execPath, args);
+  assert.match(first.stdout, /Imported 1 cards/);
+  const initial = JSON.parse(await readFile(target, 'utf8'));
+  const card = initial.workspace.cards[0];
+  assert.equal(card.schedule.reps, 0);
+  assert.equal(initial.workspace.courses.length, 1);
+  initial.workspace.reviews.push({ id: 'review-existing', cardId: card.id, rating: 3, at: new Date().toISOString() });
+  initial.versions.reviews['review-existing'] = new Date().toISOString();
+  await writeFile(target, JSON.stringify(initial));
+  const preserved = await readFile(target, 'utf8');
+  const second = await run(process.execPath, args);
+  assert.match(second.stdout, /Imported 0 cards; skipped 1/);
+  assert.equal(await readFile(target, 'utf8'), preserved);
+  assert.equal((await readdir(path.join(directory, '.local/imports'))).length, 1);
+  await writeFile(input, JSON.stringify([{ question: '', answer: 'Invalid' }]));
+  await assert.rejects(() => run(process.execPath, args));
+  assert.equal(await readFile(target, 'utf8'), preserved);
+});
