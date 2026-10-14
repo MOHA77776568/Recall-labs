@@ -1,6 +1,9 @@
 import '../browser-adapter.js';
 import { i as getReact, t as getReactDOMClient } from './framework-D_rUT4EX.js';
 import RecallLab from './recall-app-DZqLhe8P.js';
+import { StudyShell } from './study-shell.js';
+import { includePendingCardMedia } from './workspace-ui.js';
+import { announceWorkspaceChange } from './study-events.js';
 
 const originalFetch = window.fetch.bind(window);
 const bridge = window.recall;
@@ -33,7 +36,11 @@ window.fetch = async (input, options = {}) => {
     const url = new URL(path, 'http://127.0.0.1');
     if (url.pathname === '/api/workspace') {
       if ((options.method || 'GET').toUpperCase() === 'POST') {
-        return jsonResponse(await requiredMethod('saveWorkspace')(JSON.parse(options.body)));
+        const payload = JSON.parse(options.body);
+        if (payload.state) payload.state = includePendingCardMedia(payload.state);
+        const saved = await requiredMethod('saveWorkspace')(payload);
+        announceWorkspaceChange();
+        return jsonResponse(saved);
       }
       return jsonResponse(await requiredMethod('getWorkspace')());
     }
@@ -87,7 +94,7 @@ document.addEventListener('click', async event => {
 
 try {
   if (!bridge) throw new Error('The local storage adapter could not load.');
-  getReactDOMClient().createRoot(document.getElementById('root')).render(getReact().createElement(RecallLab, { userName: 'Learner', userEmail: 'Stored on this device' }));
+  getReactDOMClient().createRoot(document.getElementById('root')).render(getReact().createElement(StudyShell, { OriginalApp: RecallLab, userName: 'Learner', userEmail: 'Stored on this device' }));
 } catch (error) {
   const message = document.createElement('section');
   message.className = 'local-error';

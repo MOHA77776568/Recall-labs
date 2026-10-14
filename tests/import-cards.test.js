@@ -15,7 +15,7 @@ test('AI card importer creates real original cards, skips duplicates and preserv
   const directory = await mkdtemp(path.join(tmpdir(), 'recall-import-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   for (const folder of ['scripts', 'lib', 'data', 'renderer/site']) await mkdir(path.join(directory, folder), { recursive: true });
-  for (const filename of ['scripts/import-cards.js', 'lib/data.js', 'lib/workspace.js', 'renderer/site/fsrs-original.js']) await copyFile(path.join(root, filename), path.join(directory, filename));
+  for (const filename of ['scripts/import-cards.js', 'lib/data.js', 'lib/card-media.js', 'lib/workspace.js', 'renderer/site/fsrs-original.js']) await copyFile(path.join(root, filename), path.join(directory, filename));
   await writeFile(path.join(directory, 'package.json'), '{"type":"module"}');
   const target = path.join(directory, 'data/workspace.json');
   await writeFile(target, JSON.stringify(emptyWorkspaceDocument()));

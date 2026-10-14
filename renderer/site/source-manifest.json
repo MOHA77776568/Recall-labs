@@ -5,7 +5,7 @@
     {
       "file": "recall-app-DZqLhe8P.js",
       "sourceSha256": "d186424e2cd07c6e323e890f64ac89769f501c73e00cd85232172b3fb191b18f",
-      "localSha256": "d99e7c4d351457097e7a2dda809590ad2b924f3c222817b3367bd9170aa8cb63"
+      "localSha256": "491fbdef62c7272936cbdec74b88a91a208adab9eea578dfe76ad0ed956e556f"
     },
     {
       "file": "framework-D_rUT4EX.js",
@@ -158,5 +158,19 @@
     "localFile": "fsrs-original.js",
     "localSha256": "8bf1f93679566d4fe24c82f8d8362aa4fecf1e5c7cbaa28a243cbebbf19614dd"
   },
-  "localFormattingNote": "Whitespace-only trailing indentation was removed from adapted bundle CSS template lines; original source SHA256 is unchanged."
+  "localFormattingNote": "Whitespace-only trailing indentation was removed from adapted bundle CSS template lines; original source SHA256 is unchanged.",
+  "maintainedIntegration": {
+    "script": "scripts/integrate-study-ui.js",
+    "vendorBase": "vendor/recall-app.base.js",
+    "vendorBaseSha256": "4610b062be1e679bc5b6cf297b56fcdf654d459ef2f06ec9f90ee64ed4382da0",
+    "vendorBaseCommit": "84ab6058d7a256002d7c9c7f5699dbffd2f030f2",
+    "featureSource": [
+      "study-shell.js",
+      "study-integration.js",
+      "study-tracking.js",
+      "study-statistics.js",
+      "card-images.js",
+      "workspace-ui.js"
+    ]
+  }
 }

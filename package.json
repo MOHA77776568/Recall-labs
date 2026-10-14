@@ -1,6 +1,6 @@
 {
   "name": "recall-labs-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Offline flashcards with GitHub sync for Windows and localhost",
   "author": "MOHA77776568",
   "private": true,
@@ -16,7 +16,17 @@
     "test": "node --test tests/*.test.js",
     "test:desktop": "node tests/desktop-smoke.cjs",
     "pack": "electron-builder --dir",
-    "dist:win": "electron-builder --win nsis zip"
+    "dist:win": "electron-builder --win nsis zip",
+    "ui:integrate": "node scripts/integrate-study-ui.js",
+    "ui:check": "node scripts/integrate-study-ui.js --check",
+    "test:browser": "node tests/study-browser-smoke.mjs",
+    "pretest": "npm run ui:check",
+    "prestart": "npm run ui:check",
+    "preweb": "npm run ui:check",
+    "prepack": "npm run ui:check",
+    "predist:win": "npm run ui:check",
+    "test:images-browser": "node tests/card-images-browser-smoke.mjs",
+    "test:installed": "node tests/installed-desktop-smoke.cjs"
   },
   "dependencies": {
     "electron-updater": "6.8.9"

@@ -1,0 +1,338 @@
+/* Readable feature styles;
+   isolated from the preserved original application. */
+.study-tracking {
+  --tracking-ink:#17213b;
+  --tracking-muted:#55617a;
+  --tracking-line:#dce2ed;
+  --tracking-accent:#5d4ddd;
+  color:var(--tracking-ink);
+  font:15px/1.55 system-ui,sans-serif;
+  max-width:1180px;
+  margin:0 auto;
+  padding:24px;
+  overflow-wrap:anywhere
+}
+
+.study-tracking * {
+  box-sizing:border-box
+}
+.study-tracking h1 {
+  font-size:27px;
+  line-height:1.25;
+  margin:0 0 8px
+}
+.study-tracking h2 {
+  font-size:19px;
+  line-height:1.4;
+  margin:0 0 12px
+}
+.study-tracking h3 {
+  font-size:16px;
+  margin:0 0 8px
+}
+.study-tracking p {
+  margin:0 0 12px
+}
+.study-tracking button,.study-tracking input,.study-tracking select,.study-tracking textarea {
+  font:inherit
+}
+.study-tracking button {
+  cursor:pointer;
+  border:1px solid var(--tracking-line);
+  border-radius:8px;
+  background:#fff;
+  color:var(--tracking-ink);
+  padding:8px 12px;
+  min-height:40px
+}
+.study-tracking button:hover {
+  background:#f4f3fe
+}
+.study-tracking button:disabled {
+  opacity:.6;
+  cursor:wait
+}
+.study-tracking button.primary {
+  background:var(--tracking-accent);
+  color:#fff;
+  border-color:var(--tracking-accent)
+}
+.study-tracking button.danger {
+  color:#9b202e
+}
+.study-tracking :is(button,input,select,textarea,a,summary):focus-visible {
+  outline:3px solid #7767f0;
+  outline-offset:3px
+}
+.study-tracking input,.study-tracking select,.study-tracking textarea {
+  width:100%;
+  min-width:0;
+  padding:9px 11px;
+  border:1px solid #aab4c7;
+  border-radius:7px;
+  color:var(--tracking-ink);
+  background:#fff
+}
+.study-tracking input[type=checkbox] {
+  width:18px;
+  height:18px;
+  accent-color:var(--tracking-accent)
+}
+.study-tracking textarea {
+  min-height:74px;
+  resize:vertical
+}
+.study-tracking label {
+  display:block;
+  font-weight:600;
+  margin-bottom:5px
+}
+.study-tracking .tracking-field {
+  min-width:0
+}
+.study-tracking .tracking-field small {
+  display:block;
+  font-weight:400;
+  color:var(--tracking-muted);
+  margin-top:5px
+}
+.study-tracking .tracking-checkbox {
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  font-weight:400
+}
+.study-tracking .tracking-checkbox input {
+  flex-shrink:0;
+  margin-top:3px
+}
+.study-tracking .tracking-muted {
+  color:var(--tracking-muted);
+  font-size:13px
+}
+.study-tracking .tracking-heading {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:20px
+}
+.study-tracking .tracking-card {
+  border:1px solid var(--tracking-line);
+  border-radius:13px;
+  padding:20px;
+  background:#fff;
+  margin-bottom:18px
+}
+.study-tracking .tracking-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px
+}
+.study-tracking .tracking-fields {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:12px 0
+}
+.study-tracking .tracking-wide {
+  grid-column:1/-1
+}
+.study-tracking .tracking-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  align-items:center
+}
+.study-tracking .tracking-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:15px
+}
+.study-tracking .tracking-stats {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0
+}
+.study-tracking .tracking-stat {
+  border:1px solid var(--tracking-line);
+  border-radius:9px;
+  padding:11px;
+  background:#f8f9fc
+}
+.study-tracking .tracking-stat strong {
+  display:block;
+  font-size:19px
+}
+.study-tracking .tracking-stat span {
+  font-size:12px;
+  color:var(--tracking-muted)
+}
+.study-tracking .tracking-empty {
+  padding:20px;
+  border:1px dashed #b8c2d4;
+  border-radius:10px;
+  background:#f9fafc;
+  color:var(--tracking-muted)
+}
+.study-tracking .tracking-notice {
+  padding:12px 15px;
+  background:#edf7ef;
+  border:1px solid #b8d8c0;
+  border-radius:9px;
+  margin-bottom:16px
+}
+.study-tracking .tracking-error {
+  padding:12px 15px;
+  background:#fff0f1;
+  border:1px solid #e5b4bb;
+  border-radius:9px;
+  margin-bottom:16px;
+  color:#942130
+}
+.study-tracking .tracking-log {
+  margin:0;
+  padding:0;
+  list-style:none
+}
+.study-tracking .tracking-log>li {
+  border-top:1px solid var(--tracking-line);
+  padding:12px 0
+}
+.study-tracking .tracking-log>li:first-child {
+  border-top:0
+}
+.study-tracking .tracking-log-title {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start
+}
+.study-tracking .tracking-log-title strong {
+  font-weight:600
+}
+.study-tracking .tracking-log-title small {
+  color:var(--tracking-muted)
+}
+.study-tracking .tracking-range {
+  font-variant-numeric:tabular-nums;
+  direction:ltr;
+  unicode-bidi:isolate;
+  display:inline-block
+}
+.study-tracking .tracking-pill {
+  display:inline-flex;
+  padding:3px 8px;
+  border-radius:12px;
+  background:#eeeafd;
+  color:#493998;
+  font-size:12px;
+  gap:4px;
+  margin-inline-end:5px
+}
+.study-tracking .tracking-progress {
+  margin:12px 0
+}
+.study-tracking progress {
+  width:100%;
+  height:12px;
+  accent-color:var(--tracking-accent)
+}
+.study-tracking summary {
+  cursor:pointer;
+  font-weight:600;
+  padding:8px 0;
+  color:#4d429e
+}
+.study-tracking details {
+  margin-top:10px
+}
+.study-tracking .tracking-editor {
+  background:#f8f9fd;
+  border:1px solid var(--tracking-line);
+  border-radius:10px;
+  padding:16px;
+  margin-top:14px
+}
+.study-tracking .tracking-table-wrap {
+  overflow-x:auto
+}
+.study-tracking table {
+  width:100%;
+  border-collapse:collapse;
+  min-width:470px;
+  font-size:13px
+}
+.study-tracking th,.study-tracking td {
+  text-align:start;
+  padding:9px;
+  border-bottom:1px solid var(--tracking-line);
+  vertical-align:top
+}
+.study-tracking th {
+  font-weight:600;
+  background:#f8f9fc
+}
+.study-tracking td .tracking-actions {
+  margin:0
+}
+.study-tracking .tracking-preview {
+  border-inline-start:3px solid #b7adf2;
+  padding-inline-start:12px;
+  margin:10px 0
+}
+.study-tracking a {
+  color:#5143bb
+}
+.study-tracking .tracking-undo {
+  margin-inline-start:8px;
+  min-height:32px;
+  padding:4px 9px
+}
+.study-tracking .tracking-section-nav {
+  margin-bottom:18px
+}
+.study-tracking .tracking-date {
+  white-space:nowrap
+}
+.study-tracking .tracking-attachment {
+  max-width:100%
+}
+
+@media(max-width:900px) {
+  .study-tracking .tracking-grid {
+  grid-template-columns:1fr
+}
+.study-tracking .tracking-stats {
+  grid-template-columns:repeat(2,minmax(0,1fr))
+}
+
+}
+
+@media(max-width:540px) {
+  .study-tracking {
+  padding:16px
+}
+.study-tracking .tracking-heading {
+  flex-direction:column
+}
+.study-tracking .tracking-fields {
+  grid-template-columns:1fr
+}
+.study-tracking .tracking-card {
+  padding:15px
+}
+.study-tracking h1 {
+  font-size:23px
+}
+.study-tracking .tracking-log-title {
+  flex-direction:column;
+  gap:3px
+}
+.study-tracking .tracking-actions>* {
+  flex-grow:1
+}
+
+}

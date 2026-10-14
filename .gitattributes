@@ -1,0 +1,9 @@
+# Reproducible vendor and generated-source hashes on Windows and Linux.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.exe binary

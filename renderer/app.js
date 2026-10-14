@@ -139,9 +139,11 @@ async function syncWorkspace() {
     await saveCurrentSettings();
     const result = await api.syncWorkspace();
     const conflicts = result.workspaceConflicts || [];
-    showSyncResult(conflicts.length
+    const message = conflicts.length
       ? `تمت قراءة النسختين. هناك ${numberFormat.format(conflicts.length)} تعارضات تحتاج إلى اختيارك قبل اكتمال المزامنة.`
-      : result.syncStatus?.message || 'اكتملت المزامنة مع GitHub. بيانات هذا الجهاز ونسخة المستودع متوافقتان.');
+      : result.syncStatus?.message || 'اكتملت المزامنة مع GitHub. بيانات هذا الجهاز ونسخة المستودع متوافقتان.';
+    const imageFailures = [...new Set((result.syncStatus?.media?.failures || []).map(failure => failure.message))];
+    showSyncResult([message, ...imageFailures.slice(0, 3)].join('\n'));
     return result;
   });
 }

@@ -1,0 +1,22 @@
+.study-navigation {display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;padding:.65rem 1.2rem;background:#fff;border-bottom:1px solid #dde3ed;font-family:inherit}
+.study-navigation button,.archive-controls button,.study-file-button,.focused-review button,.study-action-link {border:1px solid #b7c3d7;border-radius:8px;padding:.5rem .8rem;background:#fff;color:#26324a;font:inherit;cursor:pointer}
+.study-navigation button[aria-current="page"] {background:#edf0ff;border-color:#626fd0;color:#303e8d}
+.study-navigation span {margin-inline-start:auto;font-size:.85rem;color:#4f5f76}
+.study-surface {max-width:1250px;margin:auto;padding:1.2rem}
+.study-global-error {background:#fff0f0;color:#8b2323;padding:1rem;display:flex;gap:1rem;align-items:center}
+.study-global-error button {padding:.4rem}
+.archive-controls {display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;padding:1rem;border:1px solid #d5ddec;border-radius:12px;margin-bottom:1rem}
+.archive-controls small,.archive-controls p {flex-basis:100%;color:#52617a}
+.study-file-button input {display:block;max-width:230px;font-size:.85rem}
+.review-context {padding:.7rem;border:1px solid #dae0eb;border-radius:9px;margin-bottom:1rem;text-align:start}
+.review-context summary {cursor:pointer;font-weight:600}
+.review-context label {display:flex;flex-direction:column;gap:.3rem;margin-top:.7rem}
+.review-context label.inline {flex-direction:row;align-items:center;overflow-wrap:anywhere}
+.review-context input,.review-context select {font:inherit;border:1px solid #aebbd0;border-radius:5px;padding:.45rem;max-width:100%}
+.review-context input[type="checkbox"] {flex-shrink:0}
+.review-context input:disabled,.review-context select:disabled {color:#52617a;background:#eef1f6}
+.study-rating-buttons {display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.source-actions,.source-tile .inline {flex-wrap:wrap}
+.focused-review h2,.focused-review .revealed-answer {white-space:pre-wrap;overflow-wrap:anywhere}
+.study-navigation button:focus-visible,.study-surface :focus-visible,.study-action-link:focus-visible {outline:3px solid #6476dd;outline-offset:3px}
+@media(max-width:600px) {.study-navigation {padding:.5rem}.study-navigation button {font-size:.82rem;padding:.45rem}.study-surface {padding:.65rem}.lecture-row .row-actions {flex-wrap:wrap}.study-navigation span {margin-inline-start:0}}
