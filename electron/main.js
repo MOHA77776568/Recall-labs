@@ -9,12 +9,17 @@ import {
 import { GitHubSyncClient, validateGitHubConfig } from '../lib/github.js';
 import { JsonStore, OperationQueue } from './storage.js';
 import { AttachmentStore } from './attachments.js';
+import { CardImageStore } from './card-images.js';
 import {
   emptyWorkspaceDocument, createWorkspaceDocument, validateWorkspaceDocument,
   parseWorkspaceDocument, serializeWorkspaceDocument, mergeWorkspaceDocuments,
-  resolveWorkspaceConflicts, MAX_WORKSPACE_BYTES,
+  resolveWorkspaceConflicts, MAX_WORKSPACE_BYTES, STUDY_COLLECTIONS,
 } from '../lib/workspace.js';
 import { applyWorkspaceReview } from '../lib/review.js';
+import { mergeWorkspaceImport, MAX_WORKSPACE_IMPORT_BYTES } from '../lib/workspace-import.js';
+import { enumerateReferencedCardMedia } from '../lib/card-media.js';
+import { synchronizeCardImages } from '../lib/card-media-sync.js';
+import { createFullWorkspaceBackup, parseFullWorkspaceBackup, MAX_FULL_BACKUP_BYTES } from '../lib/card-media-backup.js';
 
 const { autoUpdater } = updaterPackage;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -33,6 +38,7 @@ let mainWindow;
 let store;
 let state;
 let attachments;
+let cardImages;
 let update = { status: 'idle', message: 'Updates are checked only when you request them.' };
 
 function requireObject(value, label) {
@@ -42,7 +48,7 @@ function requireObject(value, label) {
 
 function validateState(input) {
   requireObject(input, 'Saved state');
-  if (![1, 2].includes(input.storeVersion)) throw new Error('Unsupported saved state version.');
+  if (![1, 2, 3].includes(input.storeVersion)) throw new Error('Unsupported saved state version; update Recall Labs before opening this library.');
   const document = validateDocument(input.document);
   const baseDocument = validateDocument(input.baseDocument);
   const pendingRemoteDocument = input.pendingRemoteDocument ? validateDocument(input.pendingRemoteDocument) : null;
@@ -61,15 +67,25 @@ function validateState(input) {
   const workspaceDocument = validateWorkspaceDocument(input.workspaceDocument ?? emptyWorkspaceDocument());
   const baseWorkspaceDocument = validateWorkspaceDocument(input.baseWorkspaceDocument ?? emptyWorkspaceDocument());
   const pendingRemoteWorkspaceDocument = input.pendingRemoteWorkspaceDocument ? validateWorkspaceDocument(input.pendingRemoteWorkspaceDocument) : null;
-  const workspaceConflicts = input.workspaceConflicts ?? [];
+  const workspaceConflicts = structuredClone(input.workspaceConflicts ?? []);
   if (!Array.isArray(workspaceConflicts) || workspaceConflicts.length > 20_000 || workspaceConflicts.some((entry) => !entry || typeof entry.id !== 'string' || entry.id.length > 240)) throw new Error('Invalid saved workspace conflicts.');
+  // Pending alternatives must advance together with the working document. A
+  // legacy conflict should still be resolvable after the first upgraded launch.
+  for (const conflict of workspaceConflicts) if (conflict.context) {
+    requireObject(conflict.context, 'Workspace conflict context');
+    for (const side of ['local', 'remote', 'base']) {
+      if (conflict.context[side]) conflict.context[side] = validateWorkspaceDocument(conflict.context[side]);
+    }
+  }
+  const workspaceConflictSource = input.workspaceConflictSource ?? (workspaceConflicts.length ? 'sync' : null);
+  if (![null, 'sync', 'import'].includes(workspaceConflictSource)) throw new Error('Invalid saved workspace conflict source.');
   const workspaceRevision = input.workspaceRevision ?? 0;
   if (!Number.isSafeInteger(workspaceRevision) || workspaceRevision < 0) throw new Error('Invalid workspace revision.');
   const workspaceUpdatedAt = input.workspaceUpdatedAt ?? new Date().toISOString();
   if (typeof workspaceUpdatedAt !== 'string' || !Number.isFinite(Date.parse(workspaceUpdatedAt))) throw new Error('Invalid workspace timestamp.');
   const workspaceOperations = input.workspaceOperations ?? [];
   if (!Array.isArray(workspaceOperations) || workspaceOperations.length > 100 || workspaceOperations.some((id) => typeof id !== 'string' || id.length > 100)) throw new Error('Invalid workspace operation history.');
-  return { storeVersion: 2, document, baseDocument, pendingRemoteDocument, conflicts, settings, encryptedToken, workspaceDocument, baseWorkspaceDocument, pendingRemoteWorkspaceDocument, workspaceConflicts: structuredClone(workspaceConflicts), workspaceRevision, workspaceUpdatedAt, workspaceOperations };
+  return { storeVersion: 3, document, baseDocument, pendingRemoteDocument, conflicts, settings, encryptedToken, workspaceDocument, baseWorkspaceDocument, pendingRemoteWorkspaceDocument, workspaceConflicts, workspaceConflictSource, workspaceRevision, workspaceUpdatedAt, workspaceOperations };
 }
 
 function publicState(extra = {}) {
@@ -166,7 +182,7 @@ function registerApplicationOperations() {
 }
 
 function workspaceState() {
-  return { state: structuredClone(state.workspaceDocument.workspace), revision: state.workspaceRevision, updatedAt: state.workspaceUpdatedAt };
+  return { state: structuredClone(state.workspaceDocument.workspace), revision: state.workspaceRevision, updatedAt: state.workspaceUpdatedAt, hasWorkspaceExtras: STUDY_COLLECTIONS.some((collection) => state.workspaceDocument.workspace[collection].length > 0) };
 }
 
 function noWorkspaceConflicts() {
@@ -197,7 +213,7 @@ function registerWorkspaceOperations() {
     if (input.operationId && state.workspaceOperations.includes(input.operationId)) return workspaceState();
     if (!Number.isSafeInteger(input.revision) || input.revision !== state.workspaceRevision) throw new Error('REVISION_CONFLICT: The workspace changed since it was loaded. Reload the current workspace before retrying.');
     const workspace = input.action === 'review'
-      ? applyWorkspaceReview(state.workspaceDocument.workspace, { cardId: input.cardId, rating: input.rating, operationId: input.operationId })
+      ? applyWorkspaceReview(state.workspaceDocument.workspace, { cardId: input.cardId, rating: input.rating, operationId: input.operationId, context: input.context })
       : input.state;
     if (input.action !== undefined && input.action !== 'review') throw new Error('Unsupported workspace operation.');
     const next = structuredClone(state);
@@ -221,23 +237,37 @@ function registerWorkspaceOperations() {
   register('restoreWorkspaceBackup', restoreWorkspaceBackup);
   register('storeSourceFile', (input) => attachments.save(input));
   register('readSourceFile', (id) => attachments.read(id));
+  register('storeCardImage', (input) => {
+    requireObject(input, 'Card image');
+    return cardImages.save(input.bytes);
+  });
+  register('readCardImage', (id) => cardImages.read(id));
   register('syncWorkspace', async () => {
     noWorkspaceConflicts();
+    const token = tokenValue();
+    const preparedImages = await synchronizeCardImages({ config: state.settings.github, token, mediaRecords: enumerateReferencedCardMedia(state.workspaceDocument.workspace), store: cardImages, phase: 'upload' });
+    if (!preparedImages.complete) return publicState({ syncStatus: { pushed: false, complete: false, media: preparedImages, message: 'Card image synchronization is incomplete. Your local study data has been preserved; retry Sync after restoring access or re-importing a missing image.' } });
     const result = await workspaceGithub.sync({
       config: state.settings.github, document: state.workspaceDocument,
-      baseDocument: state.baseWorkspaceDocument, token: tokenValue(),
+      baseDocument: state.baseWorkspaceDocument, token,
       allowPublicSync: state.settings.allowPublicSync,
     });
     const next = structuredClone(state);
     next.workspaceDocument = result.document;
     next.workspaceConflicts = result.conflicts;
+    next.workspaceConflictSource = result.conflicts.length ? 'sync' : null;
     if (result.conflicts.length) next.pendingRemoteWorkspaceDocument = result.remoteDocument;
     else {
       next.baseWorkspaceDocument = result.document;
       next.pendingRemoteWorkspaceDocument = null;
     }
     advanceWorkspace(next);
-    return commit(next, { syncStatus: { sha: result.sha, pushed: result.pushed, message: result.conflicts.length ? 'Choose how to resolve the workspace conflicts before syncing again.' : result.pushed ? 'Study data uploaded to GitHub.' : 'Workspace synchronized.' } });
+    // Save incoming JSON before downloading files. An interrupted download can
+    // be retried without losing the synchronized records or their references.
+    await commit(next);
+    const downloadedImages = await synchronizeCardImages({ config: state.settings.github, token, mediaRecords: enumerateReferencedCardMedia(next.workspaceDocument.workspace), store: cardImages, phase: 'download' });
+    const media = { ...downloadedImages, uploaded: preparedImages.uploaded, downloaded: preparedImages.downloaded + downloadedImages.downloaded };
+    return publicState({ syncStatus: { sha: result.sha, pushed: result.pushed, complete: media.complete && !result.conflicts.length, media, message: result.conflicts.length ? 'Choose how to resolve the workspace conflicts before syncing again.' : !media.complete ? 'Workspace records were saved, but some card images are unavailable. Retry Sync to download the missing images.' : result.pushed ? 'Study data and card images uploaded to GitHub.' : 'Workspace and card images synchronized.' } });
   });
   register('resolveWorkspaceConflict', (input) => {
     const { id, choice } = requireObject(input, 'Workspace conflict resolution');
@@ -248,8 +278,10 @@ function registerWorkspaceOperations() {
     next.workspaceDocument = resolved.document;
     next.workspaceConflicts = resolved.conflicts;
     if (!next.workspaceConflicts.length && next.pendingRemoteWorkspaceDocument) {
-      next.baseWorkspaceDocument = next.pendingRemoteWorkspaceDocument;
+      // An imported file is not the repository's synchronization base.
+      if (next.workspaceConflictSource !== 'import') next.baseWorkspaceDocument = next.pendingRemoteWorkspaceDocument;
       next.pendingRemoteWorkspaceDocument = null;
+      next.workspaceConflictSource = null;
     }
     advanceWorkspace(next);
     return commit(next);
@@ -260,14 +292,15 @@ function registerWorkspaceOperations() {
       const selected = await dialog.showOpenDialog(mainWindow, { title: 'Import Recall Lab workspace', properties: ['openFile'], filters: [{ name: 'JSON workspace', extensions: ['json'] }] });
       if (selected.canceled) return null;
       const text = await readFile(selected.filePaths[0], 'utf8');
-      if (Buffer.byteLength(text, 'utf8') > MAX_WORKSPACE_BYTES) throw new Error('Workspace import exceeds the supported size.');
+      if (Buffer.byteLength(text, 'utf8') > MAX_WORKSPACE_IMPORT_BYTES) throw new Error('Workspace import exceeds the supported size.');
       try { input = JSON.parse(text); } catch { throw new Error('Workspace import is not valid JSON.'); }
     }
-    const imported = input?.schemaVersion === 2 ? validateWorkspaceDocument(input) : createWorkspaceDocument(input?.state ?? input, state.workspaceDocument);
-    const merged = mergeWorkspaceDocuments(state.workspaceDocument, imported, state.baseWorkspaceDocument);
+    const merged = mergeWorkspaceImport(state.workspaceDocument, input, state.baseWorkspaceDocument);
     const next = structuredClone(state);
     next.workspaceDocument = merged.document;
     next.workspaceConflicts = merged.conflicts;
+    next.pendingRemoteWorkspaceDocument = merged.conflicts.length ? merged.importedDocument : null;
+    next.workspaceConflictSource = merged.conflicts.length ? 'import' : null;
     advanceWorkspace(next);
     return commit(next);
   });
@@ -276,6 +309,34 @@ function registerWorkspaceOperations() {
     if (selected.canceled || !selected.filePath) return null;
     await writeFile(selected.filePath, serializeWorkspaceDocument(state.workspaceDocument), { encoding: 'utf8', mode: 0o600 });
     return { path: selected.filePath };
+  });
+  register('exportFullWorkspace', async () => {
+    const backup = await createFullWorkspaceBackup(state.workspaceDocument, cardImages);
+    const selected = await dialog.showSaveDialog(mainWindow, { title: 'Export workspace and card images', defaultPath: 'recall-labs-full-backup.zip', filters: [{ name: 'Full workspace ZIP', extensions: ['zip'] }] });
+    if (selected.canceled || !selected.filePath) return null;
+    await writeFile(selected.filePath, backup.bytes, { mode: 0o600 });
+    return { path: selected.filePath, complete: true, images: backup.images };
+  });
+  register('importFullWorkspace', async (input) => {
+    noWorkspaceConflicts();
+    let bytes = input?.bytes ?? input;
+    if (input === undefined) {
+      const selected = await dialog.showOpenDialog(mainWindow, { title: 'Import workspace and card images', properties: ['openFile'], filters: [{ name: 'Full workspace ZIP', extensions: ['zip'] }] });
+      if (selected.canceled) return null;
+      bytes = await readFile(selected.filePaths[0]);
+    }
+    if (bytes?.byteLength > MAX_FULL_BACKUP_BYTES) throw new Error('The full backup exceeds 64 MiB.');
+    const backup = await parseFullWorkspaceBackup(bytes);
+    const merged = mergeWorkspaceImport(state.workspaceDocument, backup.document, state.baseWorkspaceDocument);
+    // All ZIP/document/image validation succeeds before the first file write.
+    // Content-addressed atomic writes cannot overwrite different image content.
+    for (const image of backup.images) await cardImages.save(image.bytes);
+    const next = structuredClone(state);
+    next.workspaceDocument = merged.document; next.workspaceConflicts = merged.conflicts;
+    next.pendingRemoteWorkspaceDocument = merged.conflicts.length ? merged.importedDocument : null;
+    next.workspaceConflictSource = merged.conflicts.length ? 'import' : null;
+    advanceWorkspace(next);
+    return commit(next, { importStatus: { complete: !merged.conflicts.length, images: backup.images.length, message: merged.conflicts.length ? 'Card images were restored. Resolve the workspace import conflicts to finish.' : 'Workspace and card images imported.' } });
   });
 }
 
@@ -334,10 +395,22 @@ function registerUpdates() {
 }
 
 async function loadLibrary() {
-  store = new JsonStore(app.getPath('userData'), { validate: validateState });
+  let originalSavedState;
+  store = new JsonStore(app.getPath('userData'), { validate: (input) => {
+    originalSavedState = structuredClone(input);
+    return validateState(input);
+  } });
   attachments = new AttachmentStore(path.join(app.getPath('userData'), 'attachments'));
+  cardImages = new CardImageStore(path.join(app.getPath('userData'), 'card-images'));
   const saved = await store.load();
-  if (saved) { state = saved; return; }
+  store.validate = validateState;
+  if (saved) {
+    // JsonStore.save copies the unmodified original library into backups before
+    // replacing it. Validation/migration occurs only in memory until that copy.
+    if (JSON.stringify(originalSavedState) !== JSON.stringify(saved)) await store.save(saved);
+    state = saved;
+    return;
+  }
   let document;
   try { document = parseDocument(await readFile(path.join(ROOT, 'data', 'flashcards.json'), 'utf8')); }
   catch (error) {
@@ -350,7 +423,7 @@ async function loadLibrary() {
     if (error.code !== 'ENOENT') throw error;
     workspaceDocument = emptyWorkspaceDocument();
   }
-  state = validateState({ storeVersion: 2, document, baseDocument: emptyDocument(), pendingRemoteDocument: null, conflicts: [], settings: { github: { ...DEFAULT_GITHUB }, allowPublicSync: false }, encryptedToken: null, workspaceDocument, baseWorkspaceDocument: emptyWorkspaceDocument(), pendingRemoteWorkspaceDocument: null, workspaceConflicts: [], workspaceRevision: 0, workspaceUpdatedAt: new Date().toISOString(), workspaceOperations: [] });
+  state = validateState({ storeVersion: 3, document, baseDocument: emptyDocument(), pendingRemoteDocument: null, conflicts: [], settings: { github: { ...DEFAULT_GITHUB }, allowPublicSync: false }, encryptedToken: null, workspaceDocument, baseWorkspaceDocument: emptyWorkspaceDocument(), pendingRemoteWorkspaceDocument: null, workspaceConflicts: [], workspaceConflictSource: null, workspaceRevision: 0, workspaceUpdatedAt: new Date().toISOString(), workspaceOperations: [] });
   await store.save(state);
 }
 

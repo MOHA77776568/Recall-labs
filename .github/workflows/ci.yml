@@ -37,3 +37,48 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:desktop
+
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run test:images-browser
+
+  windows-package:
+    needs: [test, windows-desktop, browser]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run dist:win -- --publish never
+      - name: Install and verify the packaged application
+        shell: pwsh
+        run: |
+          $recallInstallPath = Join-Path $env:RUNNER_TEMP 'Recall Labs installation smoke'
+          $recallInstaller = Get-ChildItem 'dist/Recall-Labs-*-x64.exe' | Select-Object -First 1
+          $recallInstall = Start-Process -FilePath $recallInstaller.FullName -ArgumentList @('/S', '/CURRENTUSER', "/D=$recallInstallPath") -Wait -PassThru
+          if ($recallInstall.ExitCode -ne 0) { throw "Installer failed: $($recallInstall.ExitCode)" }
+          $env:RECALL_INSTALLED_EXECUTABLE = Join-Path $recallInstallPath 'Recall Labs.exe'
+          if (!(Test-Path $env:RECALL_INSTALLED_EXECUTABLE)) { throw 'Installed executable was not found.' }
+          npm run test:installed
+          if ($LASTEXITCODE -ne 0) { throw 'Installed application smoke failed.' }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recall-labs-windows
+          path: |
+            dist/Recall-Labs-*-x64.exe
+            dist/Recall-Labs-*-x64.zip
+          retention-days: 14

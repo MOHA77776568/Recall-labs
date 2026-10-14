@@ -54,7 +54,7 @@ test('complete original workspace and FSRS schedules round-trip without losing e
 
 test('invalid original schema, duplicate IDs, references, metadata and unsafe JSON fail closed', () => {
   const original = fixture();
-  assert.throws(() => validateWorkspace({ ...original, version: 2 }), /version/);
+  assert.throws(() => validateWorkspace({ ...original, version: 999 }), /version/);
   assert.throws(() => validateWorkspace({ ...original, cards: [...original.cards, original.cards[0]] }), /Duplicate/);
   const orphan = copy(original); orphan.cards[0].lectureId = 'missing';
   assert.throws(() => validateWorkspace(orphan), /missing course or lecture/);
@@ -334,7 +334,7 @@ test('simple workspace helper derives UI snapshot deletions and returns the orig
   const remote = copy(base); remote.recalls = [];
   const merged = mergeWorkspaces(local, remote, base);
   assert.equal(merged.conflicts.length, 0);
-  assert.equal(merged.document.version, 1);
+  assert.equal(merged.document.version, 2);
   assert.equal(merged.document.cards[0].question, 'Independent local edit.');
   assert.equal(merged.document.recalls.length, 0);
 });

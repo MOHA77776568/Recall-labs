@@ -1,25 +1,55 @@
 {
-  "schemaVersion": 2,
-  "workspace": {
-    "cards": [],
+  "schemaVersion": 3,
+  "tombstones": {
     "courses": [],
     "lectures": [],
+    "cards": [],
     "recalls": [],
     "reviews": [],
-    "version": 1
+    "lecturePlans": [],
+    "viewingPasses": [],
+    "studySessions": [],
+    "transcriptionSegments": [],
+    "concepts": [],
+    "gaps": [],
+    "recallAttempts": [],
+    "assessments": [],
+    "studySettings": [],
+    "media": []
   },
   "versions": {
     "courses": {},
     "lectures": {},
     "cards": {},
     "recalls": {},
-    "reviews": {}
+    "reviews": {},
+    "lecturePlans": {},
+    "viewingPasses": {},
+    "studySessions": {},
+    "transcriptionSegments": {},
+    "concepts": {},
+    "gaps": {},
+    "recallAttempts": {},
+    "assessments": {},
+    "studySettings": {},
+    "media": {}
   },
-  "tombstones": {
-    "courses": [],
-    "lectures": [],
+  "workspace": {
+    "assessments": [],
     "cards": [],
+    "concepts": [],
+    "courses": [],
+    "gaps": [],
+    "lecturePlans": [],
+    "lectures": [],
+    "media": [],
+    "recallAttempts": [],
     "recalls": [],
-    "reviews": []
+    "reviews": [],
+    "studySessions": [],
+    "studySettings": [],
+    "transcriptionSegments": [],
+    "version": 2,
+    "viewingPasses": []
   }
 }

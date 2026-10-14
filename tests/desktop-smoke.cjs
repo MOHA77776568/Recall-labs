@@ -35,6 +35,11 @@ async function main() {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'recall-desktop-test-'));
   const profile = path.join(directory, 'userData');
   await mkdir(profile, { recursive: true });
+  const collections = ['courses', 'lectures', 'cards', 'recalls', 'reviews'];
+  const legacyDocument = { schemaVersion: 2, workspace: { version: 1, ...Object.fromEntries(collections.map(name => [name, []])), safeExtension: { text: 'Synthetic migration محفوظ' } }, versions: Object.fromEntries(collections.map(name => [name, {}])), tombstones: Object.fromEntries(collections.map(name => [name, []])) };
+  const privateConfig = { owner: 'synthetic-owner', repo: 'private-data', branch: 'study/device', path: 'personal/workspace.json' };
+  const legacyStore = { storeVersion: 2, document: { schemaVersion: 1, cards: [], progress: [] }, baseDocument: { schemaVersion: 1, cards: [], progress: [] }, pendingRemoteDocument: null, conflicts: [], settings: { github: privateConfig, allowPublicSync: false }, encryptedToken: null, workspaceDocument: legacyDocument, baseWorkspaceDocument: legacyDocument, pendingRemoteWorkspaceDocument: null, workspaceConflicts: [], workspaceRevision: 0, workspaceUpdatedAt: '2026-10-01T00:00:00.000Z', workspaceOperations: [] };
+  await writeFile(path.join(profile, 'library.json'), JSON.stringify(legacyStore));
   const runner = path.join(directory, 'runner.cjs');
   await writeFile(runner, `const { app } = require('electron');\napp.setPath('userData', ${JSON.stringify(profile)});\nimport(${JSON.stringify(pathToFileURL(path.join(root, 'electron/main.js')).href)});\n`);
   const options = {
@@ -51,6 +56,8 @@ async function main() {
   let pdfSourceFileId;
   let reviewDue;
   let reviewedRevision;
+  let cardImageId;
+  let imageCardId;
   const failures = [];
   const watch = (window) => window.on('pageerror', (error) => failures.push(error.message));
   try {
@@ -67,6 +74,13 @@ async function main() {
     assert.equal(await window.evaluate(() => typeof window.require), 'undefined');
 
     const initial = await window.evaluate(() => window.recall.getWorkspace());
+    assert.equal(initial.state.version, 2);
+    assert.deepEqual(initial.state.safeExtension, legacyDocument.workspace.safeExtension);
+    assert.deepEqual((await window.evaluate(() => window.recall.getState())).settings.github, privateConfig);
+    const migrationFiles = await require('node:fs/promises').readdir(path.join(profile, 'backups'));
+    assert.ok(migrationFiles.length, 'Upgrade must retain the old raw library before writing the new format.');
+    const migrationCopies = await Promise.all(migrationFiles.map(async name => JSON.parse(await readFile(path.join(profile, 'backups', name), 'utf8'))));
+    assert.ok(migrationCopies.some(copy => copy.storeVersion === 2 && copy.workspaceDocument.schemaVersion === 2 && copy.settings.github.path === privateConfig.path));
     const workspace = structuredClone(initial.state);
     workspace.courses.push({ id: courseId, title: 'Native smoke course', description: 'Temporary validation only', color: 'violet' });
     workspace.lectures.push({ id: lectureId, courseId, title: 'Local source', topic: 'Persistence', notes: 'A source that stays on this device.', pages: [] });
@@ -134,6 +148,44 @@ async function main() {
     assert.ok(backups.backups.length >= 2, 'Saving and reviewing must retain prior versions.');
     const backup = await window.evaluate((id) => window.recall.getWorkspaceBackup(id), backups.backups[0].id);
     assert.ok(backup.state.courses.some((entry) => entry.id === courseId));
+    const { syntheticPng } = await import('./helpers/card-images.js');
+    const questionBytes = syntheticPng({ color: [20, 50, 180, 255] });
+    const answerBytes = syntheticPng({ color: [180, 50, 20, 255] });
+    const questionMedia = await window.evaluate(bytes => window.recall.storeCardImage({ bytes: new Uint8Array(bytes) }), [...questionBytes]);
+    const answerMedia = await window.evaluate(bytes => window.recall.storeCardImage({ bytes: new Uint8Array(bytes) }), [...answerBytes]);
+    const duplicateMedia = await window.evaluate(bytes => window.recall.storeCardImage({ bytes: new Uint8Array(bytes) }), [...questionBytes]);
+    assert.deepEqual(duplicateMedia, questionMedia);
+    cardImageId = questionMedia.id;
+    imageCardId = randomUUID();
+    const study = structuredClone(reviewed.state);
+    study.media.push(questionMedia, answerMedia);
+    study.cards.push({ id: imageCardId, courseId, lectureId, question: '', answer: '', tags: [], source: 'Synthetic image fixture', createdAt: new Date().toISOString(), schedule: { due: '1970-01-01T00:00:00.000Z', stability: 0, difficulty: 0, elapsed_days: 0, scheduled_days: 0, reps: 0, lapses: 0, state: 0, learning_steps: 0 }, questionImages: [{ mediaId: questionMedia.id, description: 'Native question image' }], answerImages: [{ mediaId: answerMedia.id, description: 'Native answer image' }] });
+    const occurredAt = new Date().toISOString();
+    study.lecturePlans.push({ id: randomUUID(), lectureId, durationSeconds: 3600, baselineCompleteCount: 0, transcriptionScope: 'full', targetRanges: [], transcriptionMethod: 'verbatim' });
+    const passId = randomUUID();
+    study.viewingPasses.push({ id: passId, lectureId, kind: 'first', status: 'complete', startedAt: occurredAt, completedAt: occurredAt, completion: 'manual' });
+    const sessionId = randomUUID();
+    study.studySessions.push({ id: sessionId, lectureId, occurredAt, activities: ['viewing', 'transcription'], passId, ranges: [{ start: 0, end: 3600 }], effortMinutes: 45, reason: '', note: 'Synthetic shared sitting', conceptIds: [], cardIds: [], gapIds: [] });
+    study.transcriptionSegments.push({ id: randomUUID(), lectureId, start: 0, end: 900, status: 'verified', method: 'verbatim', occurredAt, modifiedAt: occurredAt, sessionId, reference: 'Synthetic notebook', note: '', attachmentId: '' });
+    await window.evaluate(value => window.recall.saveWorkspace(value), { revision: reviewed.revision, operationId: randomUUID(), state: study });
+    await window.reload();
+    await window.getByRole('button', { name: 'Review due cards', exact: true }).click();
+    await window.getByRole('img', { name: 'Native question image', exact: true }).waitFor();
+    assert.equal(await window.getByRole('img', { name: 'Native answer image', exact: true }).count(), 0);
+    await window.getByRole('button', { name: 'Reveal answer', exact: true }).click();
+    await window.getByRole('img', { name: 'Native answer image', exact: true }).waitFor();
+    await window.getByRole('button', { name: /^Good\b/ }).click();
+    await window.waitForFunction(async id => (await window.recall.getWorkspace()).state.reviews.some(record => record.cardId === id), imageCardId);
+    const complete = await window.evaluate(() => window.recall.getWorkspace());
+    reviewedRevision = complete.revision;
+    assert.equal(complete.state.cards.find(card => card.id === imageCardId).schedule.reps, 1);
+    assert.equal(complete.state.cards.find(card => card.id === cardId).schedule.reps, 1);
+    assert.equal(complete.state.reviews.find(record => record.cardId === imageCardId).practiceMode, 'closed-book');
+    const fullPath = path.join(directory, 'full-native-backup.zip');
+    await app.evaluate(({ dialog }, filePath) => { dialog.showSaveDialog = async () => ({ canceled: false, filePath }); }, fullPath);
+    const fullExport = await window.evaluate(() => window.recall.exportFullWorkspace());
+    assert.equal(fullExport.complete, true); assert.equal(fullExport.images, 2);
+    const fullBytes = await readFile(fullPath); assert.equal(fullBytes.slice(0, 2).toString(), 'PK');
     await window.screenshot({ path: path.join(directory, 'original-ui.png'), fullPage: true });
 
     await window.getByRole('link', { name: /GitHub sync/ }).click();
@@ -144,7 +196,7 @@ async function main() {
     assert.equal(publicState.settings.allowPublicSync, false);
     const exposedKeys = JSON.stringify(publicState);
     assert.ok(!/"(?:encryptedToken|token|credential)"\s*:/.test(exposedKeys));
-    assert.equal(publicState.workspaceDocument.schemaVersion, 2);
+    assert.equal(publicState.workspaceDocument.schemaVersion, 3);
     const secureStorage = await app.evaluate(({ safeStorage }) => safeStorage.isEncryptionAvailable() && safeStorage.getSelectedStorageBackend?.() !== 'basic_text');
     const fakeToken = 'native-smoke-dummy-not-a-real-token';
     const credentialAttempt = await window.evaluate(async (token) => {
@@ -187,6 +239,11 @@ async function main() {
     assert.equal(restored.state.cards.find((entry) => entry.id === cardId).schedule.due, reviewDue);
     assert.equal(restored.state.cards.find((entry) => entry.id === cardId).schedule.reps, 1);
     assert.equal(restored.state.reviews.filter((entry) => entry.cardId === cardId).length, 1);
+    assert.equal(restored.state.studySessions[0].effortMinutes, 45);
+    assert.equal(restored.state.transcriptionSegments[0].status, 'verified');
+    assert.equal(restored.state.cards.find(card => card.id === imageCardId).schedule.reps, 1);
+    const imageRestored = await window.evaluate(async id => { const image = await window.recall.readCardImage(id); return { length: image.bytes.length, mimeType: image.mimeType }; }, cardImageId);
+    assert.equal(imageRestored.mimeType, 'image/png'); assert.ok(imageRestored.length > 50);
     assert.equal((await window.evaluate(() => window.recall.getState())).settings.tokenConfigured, false);
     const restoredSource = await window.evaluate(async (id) => new TextDecoder().decode((await window.recall.readSourceFile(id)).bytes), sourceFileId);
     assert.equal(restoredSource, 'Native source: عربي English');
@@ -195,7 +252,7 @@ async function main() {
     const disk = await readFile(path.join(profile, 'library.json'), 'utf8');
     assert.ok(disk.includes(courseId));
     assert.deepEqual(failures, [], 'The native renderer must not raise JavaScript errors.');
-    console.log(JSON.stringify({ result: 'passed', profile, originalUI: true, durableWorkspace: true, sourceFiles: true, nativePDF: true, reviewScheduling: true, retryAndRevisionSafety: true, backups: true, trustedSettingsNavigation: true, untrustedIPCRejected: true, secureCredentialStorage: secureStorage ? 'encrypted-and-cleared' : 'fails-closed', credentialNotExposed: true, developmentUpdateStatus: update.status, chromiumSandbox: !noSandbox }, null, 2));
+    console.log(JSON.stringify({ result: 'passed', profile, originalUI: true, durableWorkspace: true, rawMigrationBackup: true, configuredPrivateRepositoryPreserved: true, studyRestart: true, imageRestart: true, answerImageHidden: true, independentImageReview: true, fullImageBackup: true, sourceFiles: true, nativePDF: true, reviewScheduling: true, retryAndRevisionSafety: true, backups: true, trustedSettingsNavigation: true, untrustedIPCRejected: true, secureCredentialStorage: secureStorage ? 'encrypted-and-cleared' : 'fails-closed', credentialNotExposed: true, developmentUpdateStatus: update.status, chromiumSandbox: !noSandbox }, null, 2));
   } finally {
     if (app) await app.close();
   }
